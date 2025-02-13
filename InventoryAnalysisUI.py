@@ -74,7 +74,6 @@ if uploaded_file:
                 git
                 init  # 初始化 Git 儲存庫
                 git
-                add.  # 添加所有檔案
                 git
                 commit - m
                 "Initial commit"  # 提交變更
