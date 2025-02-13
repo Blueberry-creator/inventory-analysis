@@ -7,24 +7,33 @@ def process_inventory(file, keyword):
     # 讀取 Excel 檔案的所有工作表
     excel_data = pd.read_excel(file, sheet_name=None)
 
-    # 確保檔案有至少一個工作表
-    if not excel_data:
-        raise ValueError("上傳的 Excel 檔案沒有任何工作表，請檢查檔案內容。")
+    # 確保檔案內有至少一個工作表
+    if not excel_data or len(excel_data.keys()) == 0:
+        raise ValueError("Excel 檔案沒有任何工作表，請檢查檔案內容。")
 
-    # 取得第一個工作表名稱並讀取
-    first_sheet = list(excel_data.keys())[0]
-    df = excel_data[first_sheet]
+    # 選擇第一個有資料的工作表
+    for sheet_name in excel_data.keys():
+        df = excel_data[sheet_name]
+        if not df.empty:
+            break
+    else:
+        raise ValueError("Excel 檔案內的所有工作表都是空的，請確認內容。")
 
     # 確保 Excel 內容不為空
     if df.empty:
         raise ValueError("Excel 檔案沒有可讀取的數據，請確認檔案內容。")
 
-    # 過濾品牌關鍵字（假設品牌名稱在 '商品名稱' 欄位內）
+    # 確保包含所需欄位
+    required_columns = ['商品名稱', '商品款式', '商品原價', '商品成本', '庫存總量', '總成本']
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        raise ValueError(f"Excel 檔案缺少以下欄位: {missing_columns}，請確認格式。")
+
+    # 過濾品牌關鍵字
     df = df[df['商品名稱'].astype(str).str.contains(keyword, na=False, case=False)]
 
     # 只保留指定欄位
-    keep_columns = ['商品名稱', '商品款式', '商品原價', '商品成本', '庫存總量', '總成本']
-    df = df[keep_columns]
+    df = df[required_columns]
 
     # 移除庫存為 0 或負數的商品
     df = df[df['庫存總量'] > 0]
