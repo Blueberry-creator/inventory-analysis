@@ -63,3 +63,38 @@ def process_inventory(file, keyword):
 
     except Exception as e:
         raise ValueError(f"讀取 Excel 時發生錯誤: {e}")
+
+
+# Streamlit UI 設計
+st.title("庫存分析工具")
+st.write("請上傳 Excel 檔案並輸入品牌關鍵字來進行分析。")
+
+uploaded_file = st.file_uploader("請上傳 Excel 檔案", type=["xlsx"])
+keyword = st.text_input("請輸入品牌關鍵字")
+
+if uploaded_file:
+    if not uploaded_file.name.endswith(".xlsx"):
+        st.error("請上傳有效的 Excel (.xlsx) 檔案！")
+    else:
+        if keyword:
+            try:
+                df_processed, summary_df = process_inventory(uploaded_file, keyword)
+
+                # 顯示處理後的資料
+                st.write("### 處理後的庫存數據")
+                st.dataframe(df_processed)
+
+                # 顯示總庫存與總成本
+                st.write("### 庫存與成本總結")
+                st.dataframe(summary_df)
+
+                # 匯出 Excel
+                with pd.ExcelWriter("processed_inventory.xlsx", engine='xlsxwriter') as writer:
+                    df_processed.to_excel(writer, sheet_name='整理後的資料', index=False)
+                    summary_df.to_excel(writer, sheet_name='總庫存與總成本', index=False)
+
+                with open("processed_inventory.xlsx", "rb") as file:
+                    st.download_button("下載處理後的 Excel", file, file_name="InventoryAnalysisUI.xlsx")
+            except Exception as e:
+                st.error(f"發生錯誤：{e}")
+
