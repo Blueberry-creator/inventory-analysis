@@ -84,7 +84,6 @@ if uploaded_file:
                 remote
                 add
                 origin
-                https: // github.com / 你的GitHub帳號 / inventory - analysis.git  # 替換為你的 GitHub 儲存庫網址
                 git
                 push - u
                 origin
